@@ -10,6 +10,7 @@ This document outlines the complete specification for a basic Python calculator 
 - **As a developer, I want to be able to multiply two numbers, so that I can get their product.**
 - **As a developer, I want to be able to divide one number by another, so that I can get their quotient.**
 - **As a developer, I want to receive a clear error when I try to divide by zero, so that I can handle the exceptional case gracefully.**
+- **As a developer, I want to be able to raise a number to a given power, so that I can perform exponentiation operations for calculations involving growth, decay, or geometric progressions.**
 
 ## 2. Function Signatures (Python 3.12+)
 
@@ -24,6 +25,9 @@ def multiply(a: int | float, b: int | float) -> int | float:
     ...
 
 def divide(a: int | float, b: int | float) -> float:
+    ...
+
+def power(base: int | float, exponent: int | float) -> int | float:
     ...
 ```
 
@@ -97,6 +101,54 @@ def divide(a: int | float, b: int | float) -> float:
 - **WHEN** I call `divide(a, b)`
 - **THEN** a `TypeError` is raised
 
+### Power
+
+**Happy Path Scenarios:**
+
+- **GIVEN** `base = 2` and `exponent = 10`
+- **WHEN** I call `power(base, exponent)`
+- **THEN** the result is `1024`
+
+- **GIVEN** `base = 9.0` and `exponent = 0.5`
+- **WHEN** I call `power(base, exponent)`
+- **THEN** the result is `3.0`
+
+**Edge Cases:**
+
+- **GIVEN** `base = 100` and `exponent = 0`
+- **WHEN** I call `power(base, exponent)`
+- **THEN** the result is `1`
+
+- **GIVEN** `base = 0` and `exponent = 0`
+- **WHEN** I call `power(base, exponent)`
+- **THEN** the result is `1`
+
+- **GIVEN** `base = -5` and `exponent = 2` (even integer)
+- **WHEN** I call `power(base, exponent)`
+- **THEN** the result is `25`
+
+- **GIVEN** `base = -5` and `exponent = 3` (odd integer)
+- **WHEN** I call `power(base, exponent)`
+- **THEN** the result is `-125`
+
+- **GIVEN** `base = 2` and `exponent = -2`
+- **WHEN** I call `power(base, exponent)`
+- **THEN** the result is `0.25`
+
+**Error Cases:**
+
+- **GIVEN** `base = 0` and `exponent = -1`
+- **WHEN** I call `power(base, exponent)`
+- **THEN** a `ZeroDivisionError` is raised with a message like "0.0 cannot be raised to a negative power"
+
+- **GIVEN** `base = -4` and `exponent = 0.5` (negative base, fractional exponent)
+- **WHEN** I call `power(base, exponent)`
+- **THEN** a `ValueError` is raised with a message like "Negative number cannot be raised to a fractional power"
+
+- **GIVEN** `base = "hello"` and `exponent = 2`
+- **WHEN** I call `power(base, exponent)`
+- **THEN** a `TypeError` is raised
+
 ## 4. Design and Edge Case Analysis
 
 1.  **Floating-Point Precision**:
@@ -125,6 +177,18 @@ def divide(a: int | float, b: int | float) -> float:
 6.  **Very Large Number Limits**:
     - **Behavior**: `int` types have arbitrary precision, limited by system memory. `float` types are 64-bit and will overflow to `inf` beyond ~1.8e308.
     - **Reasoning**: Inherits Python's powerful and standard numeric type capabilities.
+
+7.  **Power Function (`power`)**:
+    - **User Story**: The primary goal is to provide a standard exponentiation function for developers.
+    - **Exponent Type**: The `exponent` can be an `int` or a `float` to support both integer powers and roots (e.g., `x**0.5`).
+    - **`power(x, 0)`**: Any number `x` raised to the power of `0` is `1`. This is a standard mathematical identity.
+    - **`power(0, 0)`**: Following Python's convention, `0**0` will be defined as `1`. While mathematically ambiguous, this is the most practical definition for programming contexts.
+    - **Negative Base with Fractional Exponent**: Operations like `(-4)**0.5` result in a complex number (`2j`). Since our calculator is scoped to `int` and `float` types (as per the "Out of Scope" section), attempting this will raise a `ValueError` to prevent returning a complex number.
+    - **Large Results**: The function will handle very large results by leveraging Python's arbitrary-precision integers (e.g., `2**1000`). For floating-point results, it will adhere to standard overflow behavior, resulting in `float('inf')` if the number exceeds the 64-bit float limit.
+    - **Error Handling**:
+        - A `ValueError` is raised for mathematical domain errors (negative base to a fractional power).
+        - A `ZeroDivisionError` is raised for `0` raised to a negative power, as this is equivalent to division by zero.
+        - A `TypeError` is raised for non-numeric inputs.
 
 ## 5. Out of Scope
 

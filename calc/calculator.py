@@ -111,3 +111,46 @@ def divide(a: int | float, b: int | float) -> float:
     if b == 0:
         raise ValueError("Cannot divide by zero")
     return a / b
+
+def power(base: int | float, exponent: int | float) -> int | float:
+    """
+    Raises a base to a given exponent.
+
+    Args:
+        base (int | float): The base number.
+        exponent (int | float): The exponent.
+
+    Returns:
+        int | float: The result of base raised to the power of exponent.
+
+    Raises:
+        TypeError: If base or exponent are not of type int or float.
+        ValueError: If the base is negative and the exponent is a non-integer.
+        ZeroDivisionError: If the base is 0 and the exponent is negative.
+
+    Examples:
+        >>> power(2, 10)
+        1024
+        >>> power(9.0, 0.5)
+        3.0
+        >>> power(-4, 0.5)
+        Traceback (most recent call last):
+            ...
+        ValueError: Negative number cannot be raised to a fractional power
+        >>> power(0, -1)
+        Traceback (most recent call last):
+            ...
+        ZeroDivisionError: 0.0 cannot be raised to a negative power
+    """
+    if not isinstance(base, (int, float)) or not isinstance(exponent, (int, float)):
+        raise TypeError("Inputs must be integers or floats.")
+    if base == 0 and exponent < 0:
+        raise ZeroDivisionError("0.0 cannot be raised to a negative power")
+    if base < 0 and isinstance(exponent, float) and exponent != int(exponent):
+        raise ValueError("Negative number cannot be raised to a fractional power")
+    
+    try:
+        return base ** exponent
+    except ValueError:
+        # This handles cases like (-4)**0.5 which python internally raises a ValueError for complex results
+        raise ValueError("Negative number cannot be raised to a fractional power")
